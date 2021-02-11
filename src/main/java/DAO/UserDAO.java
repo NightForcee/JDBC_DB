@@ -8,7 +8,7 @@ public interface UserDAO {
     User get(Integer id);
     void update(User user);
     void delete(Integer id);
-    void save(User user);
+    void add(User user);
 
     List<User> getAll();
 

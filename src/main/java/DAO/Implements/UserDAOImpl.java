@@ -1,5 +1,6 @@
-package DAO;
+package DAO.Implements;
 
+import DAO.UserDAO;
 import entity.User;
 
 import java.sql.*;
@@ -10,17 +11,17 @@ public class UserDAOImpl implements UserDAO {
     private static final String URL = "jdbc:mysql://localhost:3306/mydb?useJDBCCompliantTimezoneShift" +
             "=true&useLegacyDatetimeCode=false&serverTimezone=UTC&useSSL=false";
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "artem";
+    private static final String PASSWORD = "root";
 
-    private final String SELECT_USER_BY_ID = "SELECT user.id, user.name, user.age, role.name FROM user " +
+    private final String SELECT_USER_BY_ID = "SELECT user.id, user.login, user.password, role.name FROM user " +
             "join user_role on user.id = user_role.user_id join role on user_role.role_id = role.id " +
             "WHERE user.id = ?";
-    private final String SELECT_ALL_USERS = "SELECT user.id, user.name, user.age, role.name FROM user " +
+    private final String SELECT_ALL_USERS = "SELECT user.id, user.login, user.password, role.name FROM user " +
             "join user_role on user.id = user_role.user_id join role on user_role.role_id = role.id ";
     private final String SELECT_ID_ROLE_BY_NAME = "SELECT id FROM role WHERE name = ?";
-    private final String ADD_USER = "INSERT into user(id, name, age) values(?,?,?)";
+    private final String ADD_USER = "INSERT into user(id, login, password) values(?,?,?)";
     private final String ADD_USER_ROLE = "INSERT INTO user_role(user_id, role_id) values(?,?)";
-    private final String UPDATE_USER_BY_ID = "UPDATE user SET name=?,age=? WHERE id=?";
+    private final String UPDATE_USER_BY_ID = "UPDATE user SET login=?,password=? WHERE id=?";
     private final String UPDATE_USER_ROLE_BY_ID = "UPDATE user_role SET role_id = ? WHERE user_id=?";
     private final String DELETE_USER_BY_ID = "DELETE FROM user WHERE id = ?;";
 
@@ -46,10 +47,10 @@ public class UserDAOImpl implements UserDAO {
 
             while (rs.next()) {
                 Integer user_id = rs.getInt("id");
+                String login = rs.getString("login");
+                String password = rs.getString("password");
                 String name = rs.getString("name");
-                Integer age = rs.getInt("age");
-                String role = rs.getString("role");
-                user = new User(user_id, name, age, role);
+                user = new User(user_id, login, password, name);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -68,8 +69,8 @@ public class UserDAOImpl implements UserDAO {
                 int roleId = rs.getInt("id");
 
                 statement = connection.prepareStatement(UPDATE_USER_BY_ID);
-                statement.setString(1, user.getName());
-                statement.setInt(2, user.getAge());
+                statement.setString(1, user.getLogin());
+                statement.setString(2, user.getPassword());
                 statement.setInt(3, user.getId());
                 statement.execute();
 
@@ -96,7 +97,7 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public void save(User user) {
+    public void add(User user) {
         try (Connection connection = getConnection()) {
             PreparedStatement statement = connection.prepareStatement(SELECT_ID_ROLE_BY_NAME);
             statement.setString(1, user.getRole());
@@ -106,8 +107,8 @@ public class UserDAOImpl implements UserDAO {
 
                 statement = connection.prepareStatement(ADD_USER);
                 statement.setInt(1, user.getId());
-                statement.setString(2, user.getName());
-                statement.setInt(3, user.getAge());
+                statement.setString(2, user.getLogin());
+                statement.setString(3, user.getPassword());
                 statement.execute();
 
                 statement = connection.prepareStatement(ADD_USER_ROLE);
@@ -128,10 +129,10 @@ public class UserDAOImpl implements UserDAO {
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 Integer user_id = rs.getInt("id");
-                String name = rs.getString("name");
-                Integer age = rs.getInt("age");
-                String role = rs.getString("role");
-                list.add(new User(user_id, name, age, role));
+                String login = rs.getString("login");
+                String password = rs.getString("password");
+                String role = rs.getString("name");
+                list.add(new User(user_id, login, password, role));
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
